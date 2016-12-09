@@ -73,7 +73,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
 
 - (void)setupView {
     
-//    self.isSameWithButton = NO;
+    //    self.isSameWithButton = NO;
     
     self.view.backgroundColor = [UIColor whiteColor];
     
@@ -225,16 +225,33 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
      *  设置滑动到的那个view的frame以及contentInset
      */
     NSInteger index = scrollView.contentOffset.x/ZLScreebWidth;
-    UITableViewController *vc = self.childViewControllers[index];
     
-    //设置滚动条的inset
-    vc.tableView.scrollIndicatorInsets = vc.tableView.contentInset;
     CGFloat top = 0;
     CGFloat bottom = self.tabBarController.tabBar.zl_height;
-    vc.tableView.contentInset = UIEdgeInsetsMake(top, 0, bottom, 0);
     
-    vc.view.frame = CGRectMake(scrollView.contentOffset.x, 0, ZLScreebWidth, ZLScreenHeight - 64);
-    [scrollView addSubview:vc.view];
+    if ([self.childViewControllers[index] isKindOfClass:[UITableViewController class]]) {
+        UITableViewController *vc = self.childViewControllers[index];
+        
+        //设置滚动条的inset
+        vc.tableView.scrollIndicatorInsets = vc.tableView.contentInset;
+        
+        vc.tableView.contentInset = UIEdgeInsetsMake(top, 0, bottom, 0);
+        
+        vc.view.frame = CGRectMake(scrollView.contentOffset.x, 0, ZLScreebWidth, ZLScreenHeight - 64);
+        [scrollView addSubview:vc.view];
+    }else if ([self.childViewControllers[index] isKindOfClass:[UICollectionViewController class]]) {
+        UICollectionViewController *vc = (UICollectionViewController *)self.childViewControllers[index];
+        
+        //设置滚动条的inset
+        vc.collectionView.scrollIndicatorInsets = vc.collectionView.contentInset;
+        
+        vc.collectionView.contentInset = UIEdgeInsetsMake(top, 0, bottom, 0);
+        
+        vc.view.frame = CGRectMake(scrollView.contentOffset.x, 0, ZLScreebWidth, ZLScreenHeight - 64);
+        [scrollView addSubview:vc.view];
+    }
+    
+    ZLLog(@"---childVCs---%@",self.childViewControllers);
 }
 
 
