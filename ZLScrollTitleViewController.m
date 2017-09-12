@@ -8,14 +8,8 @@
 
 #import "ZLScrollTitleViewController.h"
 
-#pragma mark - 宏定义
-#define ZLSScreenW [UIScreen mainScreen].bounds.size.width
-#define ZLSScreenH [UIScreen mainScreen].bounds.size.height
-#define ZLSScreenB [UIScreen mainScreen].bounds
-
-#define ZLTitleFont [UIFont systemFontOfSize:15.0]
-#define ZLTitleSelectedFont [UIFont systemFontOfSize:18.0]
-#define ZLPNavTextColor RGB_COLOR(231.0,50.0,80.0)
+#define ZLTitleFont [UIFont fontWithName:ZLPXingKaiFont size:16]
+#define ZLTitleSelectedFont [UIFont fontWithName:ZLPXingKaiFont size:20]
 
 static CGFloat const ZLTitleViewHeight = 40.0f;
 static CGFloat const ZLAnimtionTimeInterval = 0.2f;
@@ -27,31 +21,11 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
 @property(nonatomic, strong)UIButton *selectedButton;
 @property(nonatomic, weak)UIScrollView *contentView;
 @property(nonatomic, weak)UIView *indicatorView;
-
-/* title选中文字大小 */
-@property(nonatomic, strong)UIFont *titleSelectedFont;
-/* title文字大小 */
-@property(nonatomic, strong)UIFont *titleFont;
+//@property(nonatomic, assign)BOOL isSameWithButton;
 
 @end
 
 @implementation ZLScrollTitleViewController
-
-#pragma mark - 外部属性设置
-
-- (void)setIsChangeSelectedTitleFont:(BOOL)isChangeSelectedTitleFont titleFontSize:(CGFloat)fontSize {
-    
-    self.titleFont = fontSize ? [UIFont systemFontOfSize:fontSize] : ZLTitleFont;
-    
-    if (isChangeSelectedTitleFont) {
-        
-        self.titleSelectedFont = fontSize ? [UIFont systemFontOfSize:fontSize + 3] : ZLTitleSelectedFont;
-    }else {
-        self.titleSelectedFont = self.titleFont;
-    }
-}
-
-
 
 #pragma mark - 懒加载
 - (UIScrollView *)titleView {
@@ -62,7 +36,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
         }else {
             titleView.backgroundColor = [UIColor clearColor];
         }
-        titleView.frame = CGRectMake(0, 0, ZLSScreenW, ZLTitleViewHeight);
+        titleView.frame = CGRectMake(0, 0, ZLScreebWidth, ZLTitleViewHeight);
         titleView.showsHorizontalScrollIndicator = NO;
         self.titleView = titleView;
     }
@@ -90,19 +64,8 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
     return _contentView;
 }
 
-- (UIFont *)titleFont {
-    if (!_titleFont) {
-        _titleFont = ZLTitleFont;
-    }
-    return _titleFont;
-}
 
-- (UIFont *)titleSelectedFont {
-    if (!_titleSelectedFont) {
-        _titleSelectedFont = ZLTitleSelectedFont;
-    }
-    return _titleSelectedFont;
-}
+
 #pragma mark - viewDidLoad初始化方法
 
 - (void)viewDidLoad {
@@ -114,16 +77,18 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
 
 - (void)setupView {
     
-    self.view.backgroundColor = RGB_COLOR(246, 249, 249);
+    //    self.isSameWithButton = NO;
+    
+    self.view.backgroundColor = [UIColor whiteColor];
+    
     [self setupTitleView];
-    self.contentView.contentSize = CGSizeMake(ZLSScreenW*self.titles.count, 0);
+    self.contentView.contentSize = CGSizeMake(ZLScreebWidth*self.titles.count, 0);
     
     NSInteger count = self.childViewControllers.count;
     for (NSInteger i = 0; i < count; i++) {
-        UIViewController *vc = (UIViewController *)self.childViewControllers[i];
+        UITableViewController *vc = (UITableViewController *)self.childViewControllers[i];
         [self addChildViewController:vc];
     }
-    [self.view bringSubviewToFront:self.titleView];
 }
 
 /** 设置indicatorview **/
@@ -147,7 +112,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
         self.titleSelectedColor = ZLPNavTextColor;
     }
     
-    [self.view addSubview:self.titleView];
+    self.navigationItem.titleView = self.titleView;
     
     [self setupIndicatorView];
     
@@ -155,7 +120,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
     
     CGFloat btnX = 0;
     CGFloat btnY = 0;
-    CGFloat btnW = (ZLSScreenW - 20)/(count>4 ? 5 : count);
+    CGFloat btnW = (ZLScreebWidth - 20)/(count>4 ? 5 : count);
     CGFloat btnH = self.titleView.zl_height;
     
     if (count > 5) {
@@ -171,14 +136,14 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
         [btn setTitleColor:self.titleSelectedColor forState:UIControlStateDisabled];
         btnX = i*btnW;
         btn.frame = CGRectMake(btnX, btnY, btnW, btnH);
-        btn.titleLabel.font = self.titleFont;
+        btn.titleLabel.font = ZLTitleFont;
         [self.titleView addSubview:btn];
         [btn addTarget:self action:@selector(titleButtonClicked:) forControlEvents:UIControlEventTouchUpInside];
         btn.showsTouchWhenHighlighted = YES;
         if (0 == i) {
             self.selectedButton = btn;
             self.selectedButton.enabled = NO;
-            self.selectedButton.titleLabel.font = self.titleSelectedFont;
+            self.selectedButton.titleLabel.font = ZLTitleSelectedFont;
             
             [self.selectedButton.titleLabel sizeToFit];
             self.indicatorView.zl_width = self.selectedButton.titleLabel.zl_width;
@@ -192,10 +157,10 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
 /** titleBuuton点击事件 **/
 - (void)titleButtonClicked:(UIButton *)btn {
     self.selectedButton.enabled = YES;
-    self.selectedButton.titleLabel.font = self.titleFont;
+    self.selectedButton.titleLabel.font = ZLTitleFont;
     self.selectedButton = btn;
     self.selectedButton.enabled = NO;
-    self.selectedButton.titleLabel.font = self.titleSelectedFont;
+    self.selectedButton.titleLabel.font = ZLTitleSelectedFont;
     [self.selectedButton.titleLabel sizeToFit];
     
     __weak typeof(self) weakSelf = self;
@@ -204,7 +169,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
         weakSelf.indicatorView.zl_centerX = weakSelf.selectedButton.zl_centerX;
         
         CGPoint contentOffset = weakSelf.contentView.contentOffset;
-        contentOffset.x = btn.tag*ZLSScreenW;
+        contentOffset.x = btn.tag*ZLScreebWidth;
         [weakSelf.contentView setContentOffset:contentOffset animated:YES];
         [weakSelf scrollViewDidEndScrollingAnimation:weakSelf.contentView];
         [weakSelf setTitleViewContentOffsetWithButton:btn];
@@ -216,6 +181,8 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
 //
 - (void)setTitleViewContentOffsetWithButton:(UIButton *)button {
     if (self.titles.count < 6) return;
+    //设置当前选中的按钮在titleview的最中间位置
+    //设置titleView的offset
     CGPoint offset = self.titleView.contentOffset;
     offset.x = button.zl_x - 2*button.zl_width;
     if (offset.x < 0) {
@@ -237,7 +204,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
     ZLLog(@"+++offset++%@",NSStringFromCGPoint(scrollView.contentOffset));
     //前两个view不是button所以要加2
     __block NSInteger count = (scrollView.contentOffset.x)/self.view.zl_width;
-    count += 1;
+    count += 2;
     ZLLog(@"+++++%@",self.titleView.subviews);
     UIButton *btn = (UIButton *)self.titleView.subviews[count];
     [self titleButtonClicked:btn];
@@ -249,11 +216,10 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
     /**
      *  设置滑动到的那个view的frame以及contentInset
      */
-    NSInteger index = scrollView.contentOffset.x/ZLSScreenW;
+    NSInteger index = scrollView.contentOffset.x/ZLScreebWidth;
     
     CGFloat top = 0;
-    CGFloat bottom = 0;
-    //self.tabBarController.tabBar.zl_height;
+    CGFloat bottom = self.tabBarController.tabBar.zl_height;
     
     if ([self.childViewControllers[index] isKindOfClass:[UITableViewController class]]) {
         UITableViewController *vc = self.childViewControllers[index];
@@ -263,7 +229,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
         
         vc.tableView.contentInset = UIEdgeInsetsMake(top, 0, bottom, 0);
         
-        vc.view.frame = CGRectMake(scrollView.contentOffset.x, 0, ZLSScreenW, ZLSScreenH - 64);
+        vc.view.frame = CGRectMake(scrollView.contentOffset.x, 0, ZLScreebWidth, ZLScreenHeight - 64);
         [scrollView addSubview:vc.view];
     }else if ([self.childViewControllers[index] isKindOfClass:[UICollectionViewController class]]) {
         UICollectionViewController *vc = (UICollectionViewController *)self.childViewControllers[index];
@@ -273,12 +239,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
         
         vc.collectionView.contentInset = UIEdgeInsetsMake(top, 0, bottom, 0);
         
-        vc.view.frame = CGRectMake(scrollView.contentOffset.x, 0, ZLSScreenW, ZLSScreenH - 64);
-        [scrollView addSubview:vc.view];
-    }else {
-        UIViewController *vc = self.childViewControllers[index];
-        
-        vc.view.frame = CGRectMake(scrollView.contentOffset.x, self.titleView.zl_height + 10, ZLSScreenW, ZLSScreenH - 74 - self.titleView.zl_height);
+        vc.view.frame = CGRectMake(scrollView.contentOffset.x, 0, ZLScreebWidth, ZLScreenHeight - 64);
         [scrollView addSubview:vc.view];
     }
     
