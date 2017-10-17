@@ -21,4 +21,7 @@
 /* titleviewColor */
 @property(nonatomic, strong)UIColor *titleViewColor;
 
+/* 是否改变选中title的文字大小以及title的文字大小，如果不想改变非选中文字大小， titleFontSize 请传入0 */
+- (void)setIsChangeSelectedTitleFont:(BOOL)isChangeSelectedTitleFont titleFontSize:(CGFloat)fontSize;
+
 @end
