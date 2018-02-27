@@ -9,13 +9,16 @@
 #import "ZLScrollTitleViewController.h"
 
 #pragma mark - 宏定义
+
+#define ZLSColorWithRGB(r,g,b) [UIColor colorWithRed:(r)/255.0 green:(g)/255.0 blue:(b)/255.0 alpha:1]
+
 #define ZLSScreenW [UIScreen mainScreen].bounds.size.width
 #define ZLSScreenH [UIScreen mainScreen].bounds.size.height
 #define ZLSScreenB [UIScreen mainScreen].bounds
 
 #define ZLTitleFont [UIFont systemFontOfSize:15.0]
 #define ZLTitleSelectedFont [UIFont systemFontOfSize:18.0]
-#define ZLPNavTextColor RGB_COLOR(231.0,50.0,80.0)
+#define ZLNavTextColor ZLSColorWithRGB(231.0,50.0,80.0)
 
 static CGFloat const ZLTitleViewHeight = 40.0f;
 static CGFloat const ZLAnimtionTimeInterval = 0.2f;
@@ -114,7 +117,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
 
 - (void)setupView {
     
-    self.view.backgroundColor = RGB_COLOR(246, 249, 249);
+    self.view.backgroundColor = ZLSColorWithRGB(246, 249, 249);
     [self setupTitleView];
     self.contentView.contentSize = CGSizeMake(ZLSScreenW*self.titles.count, 0);
     
