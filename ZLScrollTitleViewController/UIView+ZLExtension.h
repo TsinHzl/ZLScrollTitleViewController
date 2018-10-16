@@ -1,6 +1,5 @@
 //
 //  UIView+ZLExtension.h
-//  ITianCai
 //
 //  Created by hezhonglin on 16/8/12.
 //  Copyright © 2016年 zeb. All rights reserved.
@@ -20,11 +19,5 @@
 
 @property(nonatomic, assign)CGFloat zl_centerX;
 @property(nonatomic, assign)CGFloat zl_centerY;
-
-- (void)setRoundViewWithCornerRaidus:(CGFloat)cornerRadius;
-/**
- *  @判断view是否显示
- */
-- (BOOL)isShowingOnKeyWindow;
 
 @end

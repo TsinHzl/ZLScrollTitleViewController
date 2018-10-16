@@ -1,6 +1,5 @@
 //
 //  UIView+ZLExtension.m
-//  ITianCai
 //
 //  Created by hezhonglin on 16/8/12.
 //  Copyright © 2016年 zeb. All rights reserved.
@@ -105,28 +104,5 @@
     self.center = center;
 }
 
-- (void)setRoundViewWithCornerRaidus:(CGFloat)cornerRadius
-{
-    self.layer.masksToBounds = YES;
-    self.layer.cornerRadius = cornerRadius;
-    
-}
 
-/**
- *  @判断view是否显示
- */
-- (BOOL)isShowingOnKeyWindow
-{
-    // 主窗口
-    UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
-    
-    // 以主窗口左上角为坐标原点, 计算self的矩形框
-    CGRect newFrame = [keyWindow convertRect:self.frame fromView:self.superview];
-    CGRect winBounds = keyWindow.bounds;
-    
-    // 主窗口的bounds 和 self的矩形框 是否有重叠
-    BOOL intersects = CGRectIntersectsRect(newFrame, winBounds);
-    
-    return !self.isHidden && self.alpha > 0.01 && self.window == keyWindow && intersects;
-}
 @end

@@ -1,24 +1,29 @@
 //
 //  ZLScrollTitleViewController.m
-//  ZLPlayNews
 //
 //  Created by hezhonglin on 16/10/27.
 //  Copyright © 2016年 TsinHzl. All rights reserved.
 //
 
 #import "ZLScrollTitleViewController.h"
+#import "UIScrollView+ZLGestureConflict.h"
+#import "UIView+ZLExtension.h"
 
 #pragma mark - 宏定义
 
 #define ZLSColorWithRGB(r,g,b) [UIColor colorWithRed:(r)/255.0 green:(g)/255.0 blue:(b)/255.0 alpha:1]
 
+#define ZLSNavTextColor [UIColor whiteColor]
+
+#define kZLNavBarHeight (ZLSScreenH >= 812.f ? 88.f : 64.f)
 #define ZLSScreenW [UIScreen mainScreen].bounds.size.width
 #define ZLSScreenH [UIScreen mainScreen].bounds.size.height
 #define ZLSScreenB [UIScreen mainScreen].bounds
 
 #define ZLTitleFont [UIFont systemFontOfSize:15.0]
 #define ZLTitleSelectedFont [UIFont systemFontOfSize:18.0]
-#define ZLNavTextColor ZLSColorWithRGB(231.0,50.0,80.0)
+//#define kTabBarH (ZLSScreenH >= 812.f ? 34.f : 0)
+//#define ZLNavTextColor ZLSColorWithRGB(231.0,50.0,80.0)
 
 static CGFloat const ZLTitleViewHeight = 40.0f;
 static CGFloat const ZLAnimtionTimeInterval = 0.2f;
@@ -65,7 +70,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
         }else {
             titleView.backgroundColor = [UIColor clearColor];
         }
-        titleView.frame = CGRectMake(0, 0, ZLSScreenW, ZLTitleViewHeight);
+        titleView.frame = CGRectMake(0, 0, ZLSScreenW, ZLTitleViewHeight + kZLNavBarHeight - 64.f);
         titleView.showsHorizontalScrollIndicator = NO;
         self.titleView = titleView;
     }
@@ -117,7 +122,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
 
 - (void)setupView {
     
-    self.view.backgroundColor = ZLSColorWithRGB(246, 249, 249);
+    self.view.backgroundColor = ZLSColorWithRGB(245, 245, 245);
     [self setupTitleView];
     self.contentView.contentSize = CGSizeMake(ZLSScreenW*self.titles.count, 0);
     
@@ -135,7 +140,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
     UIView *indicatorView = [[UIView alloc] init];
     self.indicatorView = indicatorView;
     indicatorView.backgroundColor = self.titleSelectedColor;
-    indicatorView.frame = CGRectMake(0, self.titleView.zl_height - ZLIndicatorViewHeight, 15, ZLIndicatorViewHeight);
+    indicatorView.frame = CGRectMake(0, self.titleView.zl_height - ZLIndicatorViewHeight, 15.f, ZLIndicatorViewHeight);
     [self.titleView addSubview:indicatorView];
     
 }
@@ -147,7 +152,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
         self.titleColor = [UIColor whiteColor];
     }
     if (!self.titleSelectedColor) {
-        self.titleSelectedColor = ZLPNavTextColor;
+        self.titleSelectedColor = ZLSNavTextColor;
     }
     
     [self.view addSubview:self.titleView];
@@ -158,7 +163,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
     
     CGFloat btnX = 0;
     CGFloat btnY = 0;
-    CGFloat btnW = (ZLSScreenW - 20)/(count>4 ? 5 : count);
+    CGFloat btnW = (ZLSScreenW - 20.f)/(count>4 ? 5 : count);
     CGFloat btnH = self.titleView.zl_height;
     
     if (count > 5) {
@@ -236,19 +241,19 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
 #pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
-    ZLLog(@"+++scrollViewDidEndDecelerating+++");
-    ZLLog(@"+++offset++%@",NSStringFromCGPoint(scrollView.contentOffset));
+    NSLog(@"+++scrollViewDidEndDecelerating+++");
+    NSLog(@"+++offset++%@",NSStringFromCGPoint(scrollView.contentOffset));
     //前两个view不是button所以要加2
     __block NSInteger count = (scrollView.contentOffset.x)/self.view.zl_width;
     count += 1;
-    ZLLog(@"+++++%@",self.titleView.subviews);
+    NSLog(@"+++++%@",self.titleView.subviews);
     UIButton *btn = (UIButton *)self.titleView.subviews[count];
     [self titleButtonClicked:btn];
     
 }
 
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView {
-    ZLLog(@"---scrollViewDidEndScrollingAnimation---");
+    NSLog(@"---scrollViewDidEndScrollingAnimation---");
     /**
      *  设置滑动到的那个view的frame以及contentInset
      */
@@ -266,7 +271,8 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
         
         vc.tableView.contentInset = UIEdgeInsetsMake(top, 0, bottom, 0);
         
-        vc.view.frame = CGRectMake(scrollView.contentOffset.x, 0, ZLSScreenW, ZLSScreenH - 64);
+        CGRect f = CGRectMake(scrollView.contentOffset.x, 0, ZLSScreenW, ZLSScreenH - kZLNavBarHeight - self.titleView.zl_height);
+        vc.view.frame = f;
         [scrollView addSubview:vc.view];
     }else if ([self.childViewControllers[index] isKindOfClass:[UICollectionViewController class]]) {
         UICollectionViewController *vc = (UICollectionViewController *)self.childViewControllers[index];
@@ -276,17 +282,16 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
         
         vc.collectionView.contentInset = UIEdgeInsetsMake(top, 0, bottom, 0);
         
-        vc.view.frame = CGRectMake(scrollView.contentOffset.x, 0, ZLSScreenW, ZLSScreenH - 64);
+        vc.view.frame = CGRectMake(scrollView.contentOffset.x, 0, ZLSScreenW, ZLSScreenH - kZLNavBarHeight);
         [scrollView addSubview:vc.view];
     }else {
         UIViewController *vc = self.childViewControllers[index];
-        
-        vc.view.frame = CGRectMake(scrollView.contentOffset.x, self.titleView.zl_height + 10, ZLSScreenW, ZLSScreenH - 74 - self.titleView.zl_height);
+        CGRect f = CGRectMake(scrollView.contentOffset.x, self.titleView.zl_height, ZLSScreenW, ZLSScreenH - kZLNavBarHeight - self.titleView.zl_height);
+        vc.view.frame = f;
         [scrollView addSubview:vc.view];
     }
     
-    ZLLog(@"---childVCs---%@",self.childViewControllers);
+    NSLog(@"---childVCs---%@",self.childViewControllers);
 }
-
 
 @end
