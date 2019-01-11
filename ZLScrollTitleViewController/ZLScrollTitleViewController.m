@@ -1,5 +1,6 @@
 //
 //  ZLScrollTitleViewController.m
+//  ZLPlayNews
 //
 //  Created by hezhonglin on 16/10/27.
 //  Copyright © 2016年 TsinHzl. All rights reserved.
@@ -7,22 +8,19 @@
 
 #import "ZLScrollTitleViewController.h"
 #import "UIScrollView+ZLGestureConflict.h"
-#import "UIView+ZLExtension.h"
 
 #pragma mark - 宏定义
 
 #define ZLSColorWithRGB(r,g,b) [UIColor colorWithRed:(r)/255.0 green:(g)/255.0 blue:(b)/255.0 alpha:1]
 
-#define ZLSNavTextColor [UIColor whiteColor]
+#define kZLNavBarHeight (ZLScreenHeight >= 812.f ? 88.f : 64.f)
 
-#define kZLNavBarHeight (ZLSScreenH >= 812.f ? 88.f : 64.f)
 #define ZLSScreenW [UIScreen mainScreen].bounds.size.width
 #define ZLSScreenH [UIScreen mainScreen].bounds.size.height
 #define ZLSScreenB [UIScreen mainScreen].bounds
 
 #define ZLTitleFont [UIFont systemFontOfSize:15.0]
 #define ZLTitleSelectedFont [UIFont systemFontOfSize:18.0]
-//#define kTabBarH (ZLSScreenH >= 812.f ? 34.f : 0)
 //#define ZLNavTextColor ZLSColorWithRGB(231.0,50.0,80.0)
 
 static CGFloat const ZLTitleViewHeight = 40.0f;
@@ -40,6 +38,12 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
 @property(nonatomic, strong)UIFont *titleSelectedFont;
 /* title文字大小 */
 @property(nonatomic, strong)UIFont *titleFont;
+/* titleView两个button之间的中心距离 */
+@property (assign, nonatomic) CGFloat buttonCenterDistance;
+/* 上次scrollView的contentOffsetX */
+@property (assign, nonatomic) CGFloat lastContentOffsetX;
+/* indicatorViewW */
+@property (assign, nonatomic) CGFloat indicatorViewW;
 
 @end
 
@@ -70,7 +74,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
         }else {
             titleView.backgroundColor = [UIColor clearColor];
         }
-        titleView.frame = CGRectMake(0, 0, ZLSScreenW, ZLTitleViewHeight + kZLNavBarHeight - 64.f);
+        titleView.frame = CGRectMake(0, kNavBarH, ZLSScreenW, ZLTitleViewHeight);
         titleView.showsHorizontalScrollIndicator = NO;
         self.titleView = titleView;
     }
@@ -152,7 +156,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
         self.titleColor = [UIColor whiteColor];
     }
     if (!self.titleSelectedColor) {
-        self.titleSelectedColor = ZLSNavTextColor;
+        self.titleSelectedColor = ZLNavTextColor;
     }
     
     [self.view addSubview:self.titleView];
@@ -163,9 +167,10 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
     
     CGFloat btnX = 0;
     CGFloat btnY = 0;
-    CGFloat btnW = (ZLSScreenW - 20.f)/(count>4 ? 5 : count);
+    CGFloat btnW = ZLSScreenW/(count>4 ? 5 : count);
     CGFloat btnH = self.titleView.zl_height;
-    
+    self.buttonCenterDistance = btnW;
+    self.lastContentOffsetX = 0;
     if (count > 5) {
         self.titleView.contentSize = CGSizeMake(btnW * count, 0);
     }
@@ -190,6 +195,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
             
             [self.selectedButton.titleLabel sizeToFit];
             self.indicatorView.zl_width = self.selectedButton.titleLabel.zl_width;
+            self.indicatorViewW = self.indicatorView.zl_width;
             self.indicatorView.zl_centerX = self.selectedButton.zl_centerX;
             
         }
@@ -208,8 +214,8 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
     
     __weak typeof(self) weakSelf = self;
     [UIView animateWithDuration:ZLAnimtionTimeInterval animations:^{
-        weakSelf.indicatorView.zl_width = weakSelf.selectedButton.titleLabel.zl_width;
-        weakSelf.indicatorView.zl_centerX = weakSelf.selectedButton.zl_centerX;
+//        weakSelf.indicatorView.zl_width = weakSelf.selectedButton.titleLabel.zl_width;
+//        weakSelf.indicatorView.zl_centerX = weakSelf.selectedButton.zl_centerX;
         
         CGPoint contentOffset = weakSelf.contentView.contentOffset;
         contentOffset.x = btn.tag*ZLSScreenW;
@@ -240,20 +246,43 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
 
 #pragma mark - UIScrollViewDelegate
 
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    ZLLog(@"+++scrollViewDidScroll+++");
+    ZLLog(@"contentOffsetX = %f",scrollView.contentOffset.x);
+    
+//    NSString *string = [NSString stringWithFormat:@"%f",scrollView.contentOffset.x/ZLSScreenW];
+//    string = [[string componentsSeparatedByString:@"."] lastObject];
+//    string = [NSString stringWithFormat:@"0.%@",string];
+//    CGFloat rate = string.floatValue;
+//    if (rate > 0.5) {
+//        rate = 1.f - 0.5f;
+//    }
+//    self.indicatorView.zl_width = self.indicatorViewW*(1.f + rate);
+    
+    self.indicatorView.zl_centerX += self.buttonCenterDistance*((scrollView.contentOffset.x - self.lastContentOffsetX)/ZLSScreenW);
+//    if (scrollView.contentOffset.x - self.lastContentOffsetX < 0) {
+//        self.indicatorView.zl_centerX -= self.indicatorViewW*rate/2.f;
+//    }
+    
+    self.lastContentOffsetX = scrollView.contentOffset.x;
+    
+    
+}
+
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
-    NSLog(@"+++scrollViewDidEndDecelerating+++");
-    NSLog(@"+++offset++%@",NSStringFromCGPoint(scrollView.contentOffset));
+    ZLLog(@"+++scrollViewDidEndDecelerating+++");
+    ZLLog(@"+++offset++%@",NSStringFromCGPoint(scrollView.contentOffset));
     //前两个view不是button所以要加2
     __block NSInteger count = (scrollView.contentOffset.x)/self.view.zl_width;
     count += 1;
-    NSLog(@"+++++%@",self.titleView.subviews);
+    ZLLog(@"+++++%@",self.titleView.subviews);
     UIButton *btn = (UIButton *)self.titleView.subviews[count];
     [self titleButtonClicked:btn];
     
 }
 
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView {
-    NSLog(@"---scrollViewDidEndScrollingAnimation---");
+    ZLLog(@"---scrollViewDidEndScrollingAnimation---");
     /**
      *  设置滑动到的那个view的frame以及contentInset
      */
@@ -291,7 +320,7 @@ static CGFloat const ZLIndicatorViewHeight = 1.5f;
         [scrollView addSubview:vc.view];
     }
     
-    NSLog(@"---childVCs---%@",self.childViewControllers);
+    ZLLog(@"---childVCs---%@",self.childViewControllers);
 }
 
 @end
